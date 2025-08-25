@@ -71,9 +71,3 @@ st.download_button(
     mime="text/csv"
 )
 
-st.download_button(
-    label="📥 Descargar resultados en Excel",
-    data=output.getvalue(),
-    file_name="resultados_oferta_loyalty.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
