@@ -60,7 +60,7 @@ pareto["% acumulado"] = pareto["Monto"].cumsum()/pareto["Monto"].sum()
 st.subheader("Pareto de productos")
 st.dataframe(pareto)
 
-# 6. Exportar a Excel con openpyxl (sin instalar nada extra)
+# 6. Exportar a Excel con openpyxl 
 output = BytesIO()
 df_filtro.to_csv(output, index=False, encoding="utf-8-sig")
 st.download_button(
