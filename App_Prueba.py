@@ -7,8 +7,7 @@
 # app_prueba_Americo
 import streamlit as st
 import pandas as pd
-from io import BytesIO
-import zipfile
+
 
 # 1. Cargar los datos
 ventas = pd.read_csv("Ventas.csv")
@@ -72,22 +71,4 @@ pareto["% acumulado"] = pareto["Monto"].cumsum() / pareto["Monto"].sum()
 st.subheader("Pareto de productos")
 st.dataframe(pareto)
 
-# 6. Exportar resultados en un ZIP
-output = BytesIO()
-with zipfile.ZipFile(output, "w") as zf:
-    # Guardar resultados filtrados
-    with zf.open("resultados_segmentacion.csv", "w") as f:
-        f.write(df_filtro.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"))
-    # Guardar resumen
-    with zf.open("resumen_metricas.csv", "w") as f:
-        f.write(resumen.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"))
-    # Guardar pareto
-    with zf.open("pareto.csv", "w") as f:
-        f.write(pareto.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig"))
 
-st.download_button(
-    label="📦 Descargar todos los resultados (ZIP)",
-    data=output.getvalue(),
-    file_name="resultados_oferta_loyalty.zip",
-    mime="application/zip"
-)
