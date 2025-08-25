@@ -62,9 +62,14 @@ st.dataframe(pareto)
 
 # 6. Exportar a Excel con openpyxl (sin instalar nada extra)
 output = BytesIO()
-with pd.ExcelWriter(output, engine="openpyxl") as writer:
-    df_filtro.to_excel(writer, sheet_name="Datos_Filtrados", index=False)
-    pareto.to_excel(writer, sheet_name="Pareto", index=False)
+df_filtro.to_csv(output, index=False, encoding="utf-8-sig")
+st.download_button(
+    
+    label="📥 Descargar resultados en CSV",
+    data=output.getvalue(),
+    file_name="resultados_oferta_loyalty.csv",
+    mime="text/csv"
+)
 
 st.download_button(
     label="📥 Descargar resultados en Excel",
