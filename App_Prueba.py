@@ -64,10 +64,8 @@ st.dataframe(pareto)
 output = BytesIO()
 df_filtro.to_csv(output, index=False, encoding="utf-8-sig")
 st.download_button(
-    
     label="📥 Descargar resultados en CSV",
     data=output.getvalue(),
-    file_name="resultados_oferta_loyalty.csv",
+    file_name="resultados_segmentacion.csv",
     mime="text/csv"
 )
-
