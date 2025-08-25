@@ -8,7 +8,6 @@
 import streamlit as st
 import pandas as pd
 
-
 # 1. Cargar los datos
 ventas = pd.read_csv("Ventas.csv")
 productos = pd.read_csv("Productos.csv")
@@ -35,38 +34,24 @@ productos_oferta = st.multiselect(
     options=df["ProductoID"].unique()
 )
 
-# 4. Calcular métricas con copia segura
+# 4. Calcular métricas
 df_filtro = df[
     (df["Fecha"] >= str(fecha_ini)) & 
     (df["Fecha"] <= str(fecha_fin)) & 
     (df["ProductoID"].isin(productos_oferta))
-].copy()
-
-df_filtro["Monto"] = df_filtro["Cantidad"] * df_filtro["PrecioUnitario"]
+]
 
 num_clientes = df_filtro["ClienteID"].nunique()
-num_transacciones = df_filtro["VentaID"].nunique()
 venta_total = df_filtro["Monto"].sum()
-
-# Resumen en tabla
-resumen = pd.DataFrame({
-    "Métrica": ["Clientes únicos", "Número de transacciones", "Venta total oferta"],
-    "Valor": [num_clientes, num_transacciones, venta_total]
-})
 
 # 5. Mostrar resultados
 st.metric("Clientes únicos", num_clientes)
-st.metric("Número de transacciones", num_transacciones)
 st.metric("Venta total oferta", venta_total)
 
 # Pareto
-pareto = (
-    df_filtro.groupby("ProductoID")["Monto"]
-    .sum()
-    .reset_index()
-    .sort_values(by="Monto", ascending=False)
-)
-pareto["% acumulado"] = pareto["Monto"].cumsum() / pareto["Monto"].sum()
+pareto = df_filtro.groupby("ProductoID")["Monto"].sum().reset_index()
+pareto = pareto.sort_values(by="Monto", ascending=False)
+pareto["% acumulado"] = pareto["Monto"].cumsum()/pareto["Monto"].sum()
 
 st.subheader("Pareto de productos")
 st.dataframe(pareto)
