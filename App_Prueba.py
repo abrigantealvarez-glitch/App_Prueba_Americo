@@ -42,12 +42,12 @@ df_filtro = df[
 ]
 
 num_clientes = df_filtro["ClienteID"].nunique()
-num_transacciones = df_filtro["TransaccionID"].nunique()
+num_transacciones = df_filtro["VentaID"].nunique()
 venta_total = df_filtro["Monto"].sum()
 
 # 5. Mostrar resultados
 st.metric("Clientes únicos", num_clientes)
-st.metric("Transacciones", num_transacciones)
+st.metric("Número de transacciones", num_transacciones)
 st.metric("Venta total oferta", venta_total)
 
 # Pareto
