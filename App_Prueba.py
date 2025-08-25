@@ -7,6 +7,7 @@
 # app_prueba_Americo
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 # 1. Cargar los datos
 ventas = pd.read_csv("Ventas.csv")
@@ -21,15 +22,12 @@ df = df.merge(clientes, on="ClienteID", how="left")
 df = df.merge(negocios, on="NegocioID", how="left")
 df = df.merge(calendario, on="Fecha", how="left")
 
-# Convertir fecha a tipo datetime por si acaso
-df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
-
 # 3. Interfaz Streamlit
 st.title("Dashboard Oferta Loyalty")
 
 # Filtros dinámicos
-fecha_ini = st.date_input("Fecha inicio", value=df["Fecha"].min())
-fecha_fin = st.date_input("Fecha fin", value=df["Fecha"].max())
+fecha_ini = st.date_input("Fecha inicio")
+fecha_fin = st.date_input("Fecha fin")
 monto_min = st.number_input("Monto mínimo", value=55000)
 
 productos_oferta = st.multiselect(
@@ -39,14 +37,15 @@ productos_oferta = st.multiselect(
 
 # 4. Calcular métricas
 df_filtro = df[
-    (df["Fecha"] >= pd.to_datetime(fecha_ini)) & 
-    (df["Fecha"] <= pd.to_datetime(fecha_fin)) & 
+    (df["Fecha"] >= str(fecha_ini)) & 
+    (df["Fecha"] <= str(fecha_fin)) & 
     (df["ProductoID"].isin(productos_oferta))
 ]
 
 num_clientes = df_filtro["ClienteID"].nunique()
 num_transacciones = df_filtro["VentaID"].nunique()
-venta_total = df_filtro["ValorVenta"].sum()
+df_filtro["Monto"] = df_filtro["Cantidad"] * df_filtro["PrecioUnitario"]
+venta_total = df_filtro["Monto"].sum()
 
 # 5. Mostrar resultados
 st.metric("Clientes únicos", num_clientes)
@@ -54,22 +53,22 @@ st.metric("Número de transacciones", num_transacciones)
 st.metric("Venta total oferta", venta_total)
 
 # Pareto
-pareto = df_filtro.groupby("ProductoID")["ValorVenta"].sum().reset_index()
-pareto = pareto.sort_values(by="ValorVenta", ascending=False)
-pareto["% acumulado"] = pareto["ValorVenta"].cumsum()/pareto["ValorVenta"].sum()
+pareto = df_filtro.groupby("ProductoID")["Monto"].sum().reset_index()
+pareto = pareto.sort_values(by="Monto", ascending=False)
+pareto["% acumulado"] = pareto["Monto"].cumsum()/pareto["Monto"].sum()
 
 st.subheader("Pareto de productos")
 st.dataframe(pareto)
 
-import io
-output = io.BytesIO()
-with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-    pareto.to_excel(writer, index=False, sheet_name="Pareto")
-    df_filtro.to_excel(writer, index=False, sheet_name="DetalleVentas")
+# 6. Exportar a Excel con openpyxl (sin instalar nada extra)
+output = BytesIO()
+with pd.ExcelWriter(output, engine="openpyxl") as writer:
+    df_filtro.to_excel(writer, sheet_name="Datos_Filtrados", index=False)
+    pareto.to_excel(writer, sheet_name="Pareto", index=False)
 
 st.download_button(
     label="📥 Descargar resultados en Excel",
     data=output.getvalue(),
-    file_name="Resultados_Oferta_Loyalty.xlsx",
+    file_name="resultados_oferta_loyalty.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
