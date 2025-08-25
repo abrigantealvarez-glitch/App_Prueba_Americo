@@ -60,3 +60,16 @@ pareto["% acumulado"] = pareto["ValorVenta"].cumsum()/pareto["ValorVenta"].sum()
 
 st.subheader("Pareto de productos")
 st.dataframe(pareto)
+
+import io
+output = io.BytesIO()
+with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+    pareto.to_excel(writer, index=False, sheet_name="Pareto")
+    df_filtro.to_excel(writer, index=False, sheet_name="DetalleVentas")
+
+st.download_button(
+    label="📥 Descargar resultados en Excel",
+    data=output.getvalue(),
+    file_name="Resultados_Oferta_Loyalty.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
